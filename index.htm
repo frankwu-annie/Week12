@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -49,8 +49,103 @@
             <li><a href="Week12English.htm">Week 12 - English</a></li>
             <li><a href="Week13Math.htm">Week 13 - Math</a></li>
             <li><a href="Week13English.htm">Week 13 - English</a></li>
-            <!-- Add more quizzes as needed -->
+            
         </ul>
     </div>
+</body>
+</html>
+ -->
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Pages</title>
+    <style>
+        .new-quiz {
+            color: red;
+            font-weight: bold;
+        }
+        .history-quiz {
+            color: grey;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quiz Pages</h1>
+    <ul id="quizList">
+        <!-- List items will be populated dynamically -->
+    </ul>
+
+    <script>
+        // Manually define the quiz pages following your Week*.htm pattern
+        const quizPages = [
+            { name: 'Week 12 - Math', path: 'Week12Math.htm' },
+            { name: 'Week 12 - English', path: 'Week12English.htm' },
+            { name: 'Week 13 - Math', path: 'Week13Math.htm' },
+            { name: 'Week 13 - English', path: 'Week13English.htm' }
+            // You can add more quizzes manually as needed
+        ];
+
+        const quizList = document.getElementById('quizList');
+
+        // Get the base path of index.htm from window.location.pathname
+        const basePath = window.location.pathname.replace('index.htm', '');
+
+        // Debugging: Log the base path
+        console.log('Base path:', basePath);
+
+       // Loop through each quiz and check if it has history
+       quizPages.forEach(quiz => {
+            const fullQuizPath = basePath + quiz.path; // Construct the full path
+            const historyKey = `submitHistory-${fullQuizPath}`; // Use full path for identifier
+            
+            // Debugging: Log the historyKey
+            console.log('Checking localStorage for key:', historyKey);
+            
+            const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+            
+            // Debugging: Log the retrieved history data
+            console.log(`History for ${quiz.path}:`, history);
+
+            const listItem = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = quiz.path; // Corrected to use quiz.path
+            link.textContent = quiz.name;
+
+            if (history.length === 0) {
+                // No history, mark as (new)
+                const newLabel = document.createElement('span');
+                newLabel.textContent = ' (new)';
+                newLabel.classList.add('new-quiz');
+                listItem.appendChild(link);
+                listItem.appendChild(newLabel);
+            } else {
+                // History exists, display the wrong count for each submission
+                const historyLabel = document.createElement('span');
+
+                // Extract wrongCount from each history entry
+                const wrongCountsHistory = history
+                    .map(entry => entry.wrongCount || 0) // Get wrongCount or default to 0
+                    .filter(count => count > 0) // Filter out any zero counts
+                    .join(' | '); // Join counts with " | "
+
+                // Debugging: Log the wrong counts being displayed
+                console.log(`Wrong counts for ${quiz.path}:`, wrongCountsHistory);
+
+                if (wrongCountsHistory) {
+                    historyLabel.textContent = ` (${wrongCountsHistory})`;
+                    historyLabel.classList.add('history-quiz');
+                }
+
+                listItem.appendChild(link);
+                listItem.appendChild(historyLabel);
+            }
+
+            quizList.appendChild(listItem);
+        });
+    </script>
 </body>
 </html>
