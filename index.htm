@@ -6,127 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Pages</title>
     <style>
-        .new-quiz {
-            color: red;
-            font-weight: bold;
-        }
-
-        .history-quiz {
-            color: grey;
-            font-size: 0.9em;
-        }
-    </style>
-</head>
-
-<body>
-    <h1>Quiz Pages</h1>
-    <ul id="quizList">
-        
-    </ul>
-
-    <script>
-        // Manually define the quiz pages following your Week*.htm pattern
-        const quizPages = [
-            { name: 'Week 12 - Math', path: 'Week12Math.htm' },
-            { name: 'Week 12 - English', path: 'Week12English.htm' },
-            { name: 'Week 13 - Math', path: 'Week13Math.htm' },
-            { name: 'Week 13 - English', path: 'Week13English.htm' }
-            // You can add more quizzes manually as needed
-        ];
-
-        const quizList = document.getElementById('quizList');
-
-        // Get the base path of index.htm from window.location.pathname
-        const basePath = window.location.pathname.replace('index.htm', '');
-
-        // Debugging: Log the base path
-        console.log('Base path:', basePath);
-
-        // Loop through each quiz and check if it has history
-        quizPages.forEach(quiz => {
-            const fullQuizPath = basePath + quiz.path; // Construct the full path
-            const historyKey = `submitHistory-${fullQuizPath}`; // Use full path for identifier
-
-            const history = JSON.parse(localStorage.getItem(historyKey)) || [];
-
-            const listItem = document.createElement('li');
-            const link = document.createElement('a');
-            link.href = quiz.path; // Corrected to use quiz.path
-            link.textContent = quiz.name;
-
-            if (history.length === 0) {
-                // No history, mark as (new)
-                const newLabel = document.createElement('span');
-                newLabel.textContent = ' (new)';
-                newLabel.classList.add('new-quiz');
-                listItem.appendChild(link);
-                listItem.appendChild(newLabel);
-            } else {
-                // History exists, display the wrong count for each submission as links
-                const historyLabel = document.createElement('span');
-
-                // Extract wrongCounts and create links for each submission
-                const wrongCountsHistory = history
-                    .map((entry, index) => {
-                        const count = entry.wrongCount || 0;
-                        return count > 0
-                            ? `<span class="history-link" onclick="window.location.href='${quiz.path}?submissionIndex=${index + 1}';">Submit ${index + 1}: ${count}</span>`
-                            : null;
-                    })
-                    .filter(Boolean) // Filter out any null entries
-                    .join(' | '); // Join counts with " | "
-
-                if (wrongCountsHistory) {
-                    historyLabel.innerHTML = ` (${wrongCountsHistory})`;
-                    historyLabel.classList.add('history-quiz');
-                }
-
-                listItem.appendChild(link);
-                listItem.appendChild(historyLabel);
-            }
-
-            quizList.appendChild(listItem);
-        });
-    </script>
-</body>
-
-</html> -->
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Pages</title>
-    <style>
-/*         .new-quiz {
-            color: red;
-            font-weight: bold;
-        }
-
-        .history-quiz {
-            color: grey;
-            font-size: 0.9em;
-            margin-left: 20px; 
-        }
-
-        .history-link {
-            cursor: pointer;
-            color: blue;
-            text-decoration: underline;
-        }
-
-        .history-text {
-            color: grey; 
-        }
-
-        
-        #quizList li {
-            padding-bottom: 20px;
-        } */
-                /* Overall body styling for better readability */
-                body {
+        body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
             margin: 20px;
@@ -134,7 +14,6 @@
             color: #333;
         }
 
-        /* Styling for the main heading */
         h1 {
             color: #444;
             font-size: 2em;
@@ -142,14 +21,12 @@
             padding-bottom: 10px;
         }
 
-        /* Styling the quiz list */
         ul#quizList {
             list-style: none;
             padding: 0;
             margin: 20px 0;
         }
 
-        /* Styling for each quiz item */
         ul#quizList li {
             background-color: #fff;
             padding: 15px;
@@ -162,12 +39,10 @@
             transition: background-color 0.3s ease;
         }
 
-        /* Hover effect on quiz list items */
         ul#quizList li:hover {
             background-color: #f0f8ff;
         }
 
-        /* Styling for the quiz name (link) */
         ul#quizList li a {
             text-decoration: none;
             color: #007acc;
@@ -175,50 +50,135 @@
             font-size: 1.1em;
         }
 
-        /* Styling for new quiz labels */
         .new-quiz {
             color: red;
             font-weight: bold;
             margin-left: 10px;
         }
 
-        /* Styling for submission history */
         .history-quiz {
             color: grey;
             font-size: 0.9em;
-            margin-left: 20px; /* Adds space between the quiz name and the history */
+            margin-left: 20px;
         }
 
-        /* Styling for clickable history links */
         .history-link {
             cursor: pointer;
             color: #007acc;
             text-decoration: underline;
         }
 
-        /* Non-clickable text for all-correct submissions */
         .history-text {
             color: grey;
         }
 
-        /* Responsive Design - make the page look good on small screens */
         @media (max-width: 600px) {
             ul#quizList li {
                 flex-direction: column;
                 align-items: flex-start;
             }
         }
+
+        #importExportContainer {
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 1em;
+            margin-right: 10px;
+            cursor: pointer;
+            background-color: #007acc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #005f99;
+        }
+
+        /* Styles for the modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+
+        #closeModalButton,
+        #copyButton,
+        #importConfirmButton {
+            padding: 10px;
+            background-color: #007acc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        #closeModalButton:hover,
+        #copyButton:hover,
+        #importConfirmButton:hover {
+            background-color: #005f99;
+        }
     </style>
 </head>
 
 <body>
     <h1>Quiz Pages</h1>
+
     <ul id="quizList">
-        <!-- List items will be populated dynamically -->
     </ul>
 
+    <div id="importExportContainer">
+        <button id="exportButton">Export Submission History</button>
+        <button id="importButton">Import Submission History</button>
+    </div>
+
+
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <h2>Exported Submission History</h2>
+            <textarea id="exportTextArea" readonly></textarea>
+            <button id="copyButton">Copy</button>
+            <button id="closeModalButton">Close</button>
+        </div>
+    </div>
+
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <h2>Import Submission History</h2>
+            <textarea id="importTextArea" placeholder="Paste your submission history data here..."></textarea>
+            <button id="importConfirmButton">Import</button>
+            <button id="closeImportModalButton">Close</button>
+        </div>
+    </div>
+
     <script>
-        // Manually define the quiz pages following your Week*.htm pattern
         const quizPages = [
             //{ name: 'Week 12 - Math', path: 'Week12Math.htm' },
             { name: 'Week 12 - English', path: 'Week12English.htm' },
@@ -249,33 +209,27 @@
         ];
 
         const quizList = document.getElementById('quizList');
-
-        // Get the base path of index.htm from window.location.pathname
         const basePath = window.location.pathname.replace('index.htm', '');
 
-        // Loop through each quiz and check if it has history
         quizPages.forEach(quiz => {
-            const fullQuizPath = basePath + quiz.path; // Construct the full path
-            const historyKey = `submitHistory-${fullQuizPath}`; // Use full path for identifier
-
+            const fullQuizPath = basePath + quiz.path;
+            const historyKey = `submitHistory-${fullQuizPath}`;
             const history = JSON.parse(localStorage.getItem(historyKey)) || [];
 
             const listItem = document.createElement('li');
             const link = document.createElement('a');
-            link.href = quiz.path; // Corrected to use quiz.path
+            link.href = quiz.path;
             link.textContent = quiz.name;
 
             if (history.length === 0) {
-                // No history, mark as (new)
                 const newLabel = document.createElement('span');
                 newLabel.textContent = ' (new)';
                 newLabel.classList.add('new-quiz');
                 listItem.appendChild(link);
                 listItem.appendChild(newLabel);
             } else {
-                // History exists, display the wrong count for each submission as clickable spans
                 const historyLabel = document.createElement('span');
-                historyLabel.classList.add('history-quiz'); // Adds margin for spacing
+                historyLabel.classList.add('history-quiz');
 
                 history.forEach((entry, index) => {
                     const count = entry.wrongCount || 0;
@@ -285,19 +239,16 @@
                         submissionLink.textContent = `Submit ${index + 1}: ${count}`;
                         submissionLink.classList.add('history-link');
                         submissionLink.addEventListener('click', function () {
-                            // Redirect to the quiz page with the correct submission index
                             window.location.href = `${quiz.path}?submissionIndex=${index + 1}`;
                         });
                         historyLabel.appendChild(submissionLink);
                     } else {
-                        // If all correct, display as plain grey text, not a link
                         const submissionText = document.createElement('span');
                         submissionText.textContent = `Submit ${index + 1}: ${count}`;
                         submissionText.classList.add('history-text');
                         historyLabel.appendChild(submissionText);
                     }
 
-                    // Add separator if not the last submission
                     if (index < history.length - 1) {
                         const separator = document.createTextNode(' | ');
                         historyLabel.appendChild(separator);
@@ -309,6 +260,524 @@
             }
 
             quizList.appendChild(listItem);
+        });
+
+        // Function to export submission history and display in a modal
+        document.getElementById('exportButton').addEventListener('click', function () {
+            let exportData = {};
+            quizPages.forEach(quiz => {
+                const fullQuizPath = basePath + quiz.path;
+                const historyKey = `submitHistory-${fullQuizPath}`;
+                const history = JSON.parse(localStorage.getItem(historyKey));
+                if (history) {
+                    exportData[historyKey] = history;
+                }
+            });
+
+            const exportString = JSON.stringify(exportData, null, 2);
+
+            // Show the modal with the export data
+            const modal = document.getElementById('exportModal');
+            const textArea = document.getElementById('exportTextArea');
+            textArea.value = exportString; // Fill textarea with the export data
+            modal.style.display = 'flex'; // Show modal
+        });
+
+        // Function to copy the export data to the clipboard
+        document.getElementById('copyButton').addEventListener('click', function () {
+            const textArea = document.getElementById('exportTextArea');
+            textArea.select();
+            document.execCommand('copy'); // Copies the text to clipboard
+            alert("Submission history copied to clipboard!");
+        });
+
+        // Close the export modal
+        document.getElementById('closeModalButton').addEventListener('click', function () {
+            document.getElementById('exportModal').style.display = 'none';
+        });
+
+        // Function to show the import modal
+        document.getElementById('importButton').addEventListener('click', function () {
+            const importModal = document.getElementById('importModal');
+            importModal.style.display = 'flex'; // Show import modal
+        });
+
+        // Function to confirm importing submission history
+        document.getElementById('importConfirmButton').addEventListener('click', function () {
+            const importText = document.getElementById('importTextArea').value;
+
+            if (importText) {
+                const importedData = JSON.parse(importText);
+
+                Object.keys(importedData).forEach(key => {
+                    localStorage.setItem(key, JSON.stringify(importedData[key]));
+                });
+
+                alert("Submission history imported successfully!");
+                window.location.reload(); // Refresh to apply imported data
+            }
+        });
+
+        // Close the import modal
+        document.getElementById('closeImportModalButton').addEventListener('click', function () {
+            document.getElementById('importModal').style.display = 'none';
+        });
+
+    </script>
+</body>
+
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Pages</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 20px;
+            padding: 0;
+            color: #333;
+        }
+
+        h1 {
+            color: #444;
+            font-size: 2em;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+
+        ul#quizList {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        ul#quizList li {
+            background-color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        ul#quizList li:hover {
+            background-color: #f0f8ff;
+        }
+
+        ul#quizList li a {
+            text-decoration: none;
+            color: #007acc;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .new-quiz {
+            color: red;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .history-quiz {
+            color: grey;
+            font-size: 0.9em;
+            margin-left: 20px;
+        }
+
+        .history-link {
+            cursor: pointer;
+            color: #007acc;
+            text-decoration: underline;
+        }
+
+        .history-text {
+            color: grey;
+        }
+
+        @media (max-width: 600px) {
+            ul#quizList li {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        #importExportContainer {
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 1em;
+            margin-right: 10px;
+            cursor: pointer;
+            background-color: #007acc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #005f99;
+        }
+
+        /* Styles for the modal */
+        .modal {
+            display: none;
+            /* Ensure modals are hidden by default */
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        #closeModalButton,
+        #copyButton,
+        #importConfirmButton,
+        #deleteConfirmButton {
+            padding: 10px;
+            background-color: #007acc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        #closeModalButton:hover,
+        #copyButton:hover,
+        #importConfirmButton:hover,
+        #deleteConfirmButton:hover {
+            background-color: #005f99;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Quiz Pages</h1>
+
+    <ul id="quizList">
+        <!-- List items will be populated dynamically -->
+    </ul>
+
+    <!-- Buttons for Exporting, Importing, and Deleting Submission History -->
+    <div id="importExportContainer">
+        <button id="exportButton">Export Submission History</button>
+        <button id="importButton">Import Submission History</button>
+        <button id="deleteButton">Delete a Submission</button>
+    </div>
+
+
+
+    <!-- Modal for Export Data -->
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <h2>Exported Submission History</h2>
+            <textarea id="exportTextArea" readonly></textarea>
+            <button id="copyButton">Copy</button>
+            <button id="closeModalButton">Close</button>
+        </div>
+    </div>
+
+    <!-- Modal for Import Data -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <h2>Import Submission History</h2>
+            <textarea id="importTextArea" placeholder="Paste your submission history data here..."></textarea>
+            <button id="importConfirmButton">Import</button>
+            <button id="closeImportModalButton">Close</button>
+        </div>
+    </div>
+
+    <!-- Modal for Deleting Submission History -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h2>Delete Submission History</h2>
+            <label for="quizSelect">Select Quiz:</label>
+            <select id="quizSelect"></select>
+
+            <label for="submissionSelect">Select Submission History:</label>
+            <select id="submissionSelect"></select>
+
+            <button id="deleteConfirmButton">Delete</button>
+            <button id="closeDeleteModalButton">Close</button>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function () {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.style.display = 'none'; // Set display to none for all modals
+            });
+        };
+        const quizPages = [
+
+
+            { name: 'Week 12 - English', path: 'Week12English.htm' },
+            { name: 'Week 13 - Math', path: 'Week13Math.htm' },
+            { name: 'Week 13 - English', path: 'Week13English.htm' },
+            { name: 'Week 14 - Math', path: 'Week14Math.htm' },
+            { name: 'Week 14 - English', path: 'Week14English.htm' },
+            { name: 'Week 15 - Math', path: 'Week15Math.htm' },
+            { name: 'Week 15 - English', path: 'Week15English.htm' },
+            { name: 'Week 16 - Verbal', path: 'Week16Verbal.htm' },
+            { name: 'Week 16 - Quantitative', path: 'Week16Quantitative.htm' },
+            { name: 'Week 16 - Nonverbal', path: 'Week16Nonverbal.htm' },
+            { name: 'Week 17- Verbal', path: 'Week17Verbal.htm' },
+            { name: 'Week 17 - Quantitative', path: 'Week17Quantitative.htm' },
+            { name: 'Week 17 - Nonverbal', path: 'Week17Nonverbal.htm' },
+            { name: 'Week 18 - Verbal', path: 'Week18Verbal.htm' },
+            { name: 'Week 18 - Quantitative', path: 'Week18Quantitative.htm' },
+            { name: 'Week 18 - Nonverbal', path: 'Week18Nonverbal.htm' },
+            { name: 'Week 19 - Verbal', path: 'Week19Verbal.htm' },
+            { name: 'Week 19 - Quantitative', path: 'Week19Quantitative.htm' },
+            { name: 'Week 19 - Nonverbal', path: 'Week19Nonverbal.htm' },
+            { name: 'Week 20 - Verbal', path: 'Week20Verbal.htm' },
+            { name: 'Week 20 - Quantitative', path: 'Week20Quantitative.htm' },
+            { name: 'Week 20 - Nonverbal', path: 'Week20Nonverbal.htm' },
+            { name: 'Summary Camp - Math', path: 'Week21Math.htm' },
+            { name: 'Week 1 - Verbal', path: 'Week1Verbal.htm' },
+            { name: 'Week 1 - Quantitative', path: 'Week1Quantitative.htm' },
+            { name: 'Week 1 - Nonverbal', path: 'Week1Nonverbal.htm' },
+            { name: 'Week 2 - Verbal', path: 'Week2Verbal.htm' },
+            { name: 'Week 2 - Quantitative', path: 'Week2Quantitative.htm' },
+            { name: 'Week 2 - Nonverbal', path: 'Week2Nonverbal.htm' },
+            { name: 'Week 3 - Verbal', path: 'Week3Verbal.htm' },
+            { name: 'Week 3 - Quantitative', path: 'Week3Quantitative.htm' },
+            { name: 'Week 3 - Nonverbal', path: 'Week3Nonverbal.htm' },
+            { name: 'Week 4 - Verbal', path: 'Week4Verbal.htm' },
+            { name: 'Week 4 - Quantitative', path: 'Week4Quantitative.htm' },
+            { name: 'Week 4 - Nonverbal', path: 'Week4Nonverbal.htm' },
+            { name: 'Week 5 - Verbal', path: 'Week5Verbal.htm' },
+            { name: 'Week 5 - Quantitative', path: 'Week5Quantitative.htm' },
+            { name: 'Week 5 - Nonverbal', path: 'Week5Nonverbal.htm' },
+            { name: 'Week 6 - Math', path: 'Week6Math.htm' },
+            { name: 'Week 6 - English', path: 'Week6English.htm' },
+            { name: 'Week 7 - Math', path: 'Week7Math.htm' },
+            { name: 'Week 7 - English', path: 'Week7English.htm' },
+            { name: 'Week 8 - Math', path: 'Week8Math.htm' },
+            { name: 'Week 8 - English', path: 'Week8English.htm' },
+            { name: 'Week 9 - Math', path: 'Week9Math.htm' },
+            { name: 'Week 9 - English', path: 'Week9English.htm' },
+            { name: 'Week 10 - Math', path: 'Week10Math.htm' },
+            { name: 'Week 10 - English', path: 'Week10English.htm' },
+            { name: 'Week 11 - Math', path: 'Week11Math.htm' },
+            { name: 'Week 11 - English', path: 'Week11English.htm' },
+            { name: 'Week 12 - Math', path: 'Week12Math.htm' }
+
+            // You can add more quizzes manually as needed
+        ];
+
+
+        const quizList = document.getElementById('quizList');
+        const basePath = window.location.pathname.replace('index.htm', '');
+
+        quizPages.forEach(quiz => {
+            const fullQuizPath = basePath + quiz.path;
+            const historyKey = `submitHistory-${fullQuizPath}`;
+            const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+
+            const listItem = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = quiz.path;
+            link.textContent = quiz.name;
+
+            if (history.length === 0) {
+                const newLabel = document.createElement('span');
+                newLabel.textContent = ' (new)';
+                newLabel.classList.add('new-quiz');
+                listItem.appendChild(link);
+                listItem.appendChild(newLabel);
+            } else {
+                const historyLabel = document.createElement('span');
+                historyLabel.classList.add('history-quiz');
+
+                history.forEach((entry, index) => {
+                    const count = entry.wrongCount || 0;
+
+                    if (count > 0) {
+                        const submissionLink = document.createElement('span');
+                        submissionLink.textContent = `Submit ${index + 1}: ${count}`;
+                        submissionLink.classList.add('history-link');
+                        submissionLink.addEventListener('click', function () {
+                            window.location.href = `${quiz.path}?submissionIndex=${index + 1}`;
+                        });
+                        historyLabel.appendChild(submissionLink);
+                    } else {
+                        const submissionText = document.createElement('span');
+                        submissionText.textContent = `Submit ${index + 1}: ${count}`;
+                        submissionText.classList.add('history-text');
+                        historyLabel.appendChild(submissionText);
+                    }
+
+                    if (index < history.length - 1) {
+                        const separator = document.createTextNode(' | ');
+                        historyLabel.appendChild(separator);
+                    }
+                });
+
+                listItem.appendChild(link);
+                listItem.appendChild(historyLabel);
+            }
+
+            quizList.appendChild(listItem);
+        });
+
+        // Function to export submission history and display in a modal
+        document.getElementById('exportButton').addEventListener('click', function () {
+            let exportData = {};
+            quizPages.forEach(quiz => {
+                const fullQuizPath = basePath + quiz.path;
+                const historyKey = `submitHistory-${fullQuizPath}`;
+                const history = JSON.parse(localStorage.getItem(historyKey));
+                if (history) {
+                    exportData[historyKey] = history;
+                }
+            });
+
+            const exportString = JSON.stringify(exportData, null, 2);
+
+            // Show the modal with the export data
+            const modal = document.getElementById('exportModal');
+            const textArea = document.getElementById('exportTextArea');
+            textArea.value = exportString; // Fill textarea with the export data
+            modal.style.display = 'flex'; // Show the modal
+        });
+
+        // Copy the exported data to clipboard
+        document.getElementById('copyButton').addEventListener('click', function () {
+            const textArea = document.getElementById('exportTextArea');
+            textArea.select();
+            document.execCommand('copy');
+            alert('Exported data copied to clipboard!');
+        });
+
+        // Close the export modal
+        document.getElementById('closeModalButton').addEventListener('click', function () {
+            document.getElementById('exportModal').style.display = 'none';
+        });
+
+        // Function to handle import submission history
+        document.getElementById('importButton').addEventListener('click', function () {
+            document.getElementById('importModal').style.display = 'flex'; // Show modal
+        });
+
+        // Handle the import confirmation
+        document.getElementById('importConfirmButton').addEventListener('click', function () {
+            const importText = document.getElementById('importTextArea').value;
+            if (importText) {
+                try {
+                    const importedData = JSON.parse(importText);
+                    Object.keys(importedData).forEach(key => {
+                        localStorage.setItem(key, JSON.stringify(importedData[key]));
+                    });
+                    alert("Submission history imported successfully!");
+                    window.location.reload(); // Refresh to apply imported data
+                } catch (error) {
+                    alert("Invalid data format. Please check and try again.");
+                }
+            }
+        });
+
+        // Close the import modal
+        document.getElementById('closeImportModalButton').addEventListener('click', function () {
+            document.getElementById('importModal').style.display = 'none';
+        });
+
+        // Open the delete submission modal
+        document.getElementById('deleteButton').addEventListener('click', function () {
+            populateQuizDropdown();
+            document.getElementById('deleteModal').style.display = 'flex'; // Show modal
+        });
+
+        // Populate quiz dropdown for deletion
+        function populateQuizDropdown() {
+            const quizSelect = document.getElementById('quizSelect');
+            quizSelect.innerHTML = ''; // Clear existing options
+            quizPages.forEach((quiz, index) => {
+                const option = document.createElement('option');
+                option.value = quiz.path;
+                option.textContent = quiz.name;
+                quizSelect.appendChild(option);
+            });
+
+            quizSelect.addEventListener('change', function () {
+                populateSubmissionDropdown(this.value);
+            });
+        }
+
+        // Populate submission dropdown based on selected quiz
+        function populateSubmissionDropdown(quizPath) {
+            const submissionSelect = document.getElementById('submissionSelect');
+            submissionSelect.innerHTML = ''; // Clear existing options
+            const historyKey = `submitHistory-${basePath}${quizPath}`;
+            const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+
+            history.forEach((entry, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `Submit ${index + 1} (${entry.wrongCount || 0} wrong)`;
+                submissionSelect.appendChild(option);
+            });
+        }
+
+        // Handle delete confirmation
+        document.getElementById('deleteConfirmButton').addEventListener('click', function () {
+            const quizPath = document.getElementById('quizSelect').value;
+            const submissionIndex = document.getElementById('submissionSelect').value;
+            if (submissionIndex !== '') {
+                const historyKey = `submitHistory-${basePath}${quizPath}`;
+                const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+
+                if (history.length > submissionIndex) {
+                    history.splice(submissionIndex, 1); // Remove the selected submission
+                    localStorage.setItem(historyKey, JSON.stringify(history)); // Update localStorage
+                    alert("Submission history deleted successfully!");
+                    window.location.reload(); // Refresh to apply changes
+                } else {
+                    alert("Submission not found.");
+                }
+            }
+        });
+
+        // Close the delete modal
+        document.getElementById('closeDeleteModalButton').addEventListener('click', function () {
+            document.getElementById('deleteModal').style.display = 'none';
         });
     </script>
 </body>
