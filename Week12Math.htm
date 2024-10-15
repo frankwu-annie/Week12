@@ -3342,235 +3342,315 @@
             });
         })
     </script>
-<script>
-    const quizPageId = window.location.pathname; // Use the path of the URL as the identifier
+    <script>
+        const quizPageId = window.location.pathname; // Use the path of the URL as the identifier
 
-    // Save selected answers to localStorage
-    function saveAnswers() {
-        const allQuizzes = document.querySelectorAll('.form-group');
-        allQuizzes.forEach((quiz, quizIndex) => {
-            const selectedOption = quiz.querySelector('input[type="radio"]:checked');
-            if (selectedOption) {
-                // Save answers specific to the current quiz page
-                localStorage.setItem(`quiz-${quizPageId}-${quizIndex}`, selectedOption.value);
-            }
-        });
-    }
+        // Function to check URL and trigger the correct redo button
+        function handleRedoRequest() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const submissionIndex = urlParams.get('submissionIndex');
 
-    // Load saved answers from localStorage
-    function loadAnswers() {
-        const allQuizzes = document.querySelectorAll('.form-group');
-        allQuizzes.forEach((quiz, quizIndex) => {
-            // Load answers specific to the current quiz page
-            const savedAnswer = localStorage.getItem(`quiz-${quizPageId}-${quizIndex}`);
-            if (savedAnswer) {
-                const optionToSelect = quiz.querySelector(`input[type="radio"][value="${savedAnswer}"]`);
-                if (optionToSelect) {
-                    optionToSelect.checked = true;
+            if (submissionIndex) {
+                // Find the redo button with the matching submission index and trigger a click
+                const redoButton = document.querySelector(`.redoButton[data-submission-index="${submissionIndex}"]`);
+                if (redoButton) {
+                    redoButton.click(); // Trigger the click event
                 }
             }
-        });
-    }
+        }
 
-    // Clear quiz-related data but keep history
-    function clearQuizAnswers() {
-        // Clear only the answers related to the current quiz page
-        Object.keys(localStorage).forEach(key => {
-            if (key.startsWith(`quiz-${quizPageId}-`)) {
-                localStorage.removeItem(key);
-            }
-        });
-    }
-    // Create the history container and buttons dynamically
-    document.addEventListener('DOMContentLoaded', function () {
-        // Your JavaScript code starts here
-
-        // Select all quizzes (form-group divs)
-        const quizDivs = document.querySelectorAll('.form-group');
-        let correctAnswers = [];
-        let wrongQuestions = [];
-        let wrongQuestionsRetry = [];  // Track the previously correct questions
-        let isRedoMode = false;
-
-        // Find and update the score element
-        let scoreElement = document.querySelector('h5');
-        let totalQuestions = quizDivs.length;
-        let correctCount = 0;
-
-
-
-        // Loop through each quiz div to identify correct answers
-        quizDivs.forEach((quiz, index) => {
-            const answerDivs = quiz.querySelectorAll('div');
-            let correctAnswer = '';
-
-            // Loop through each answer div inside the quiz
-            answerDivs.forEach((answerDiv, i) => {
-                const isCorrectAnswer = answerDiv.style.backgroundColor === 'lightgreen' &&
-                    answerDiv.style.width === '50%' &&
-                    !answerDiv.textContent.includes("Your answer");
-
-                if (isCorrectAnswer) {
-                    correctAnswer = answerDiv.textContent.trim();
-                }
-
-                answerDiv.style.backgroundColor = 'transparent';
-
-                const answerText = answerDiv.textContent.trim();
-
-                if (answerText !== '' && !answerDiv.querySelector('h1') && !answerDiv.textContent.includes("Your answer")) {
-                    const radioButton = document.createElement('input');
-                    radioButton.type = 'radio';
-                    radioButton.name = `quiz-${index}`;
-                    radioButton.value = answerText;
-
-                    answerDiv.innerHTML = '';
-                    answerDiv.appendChild(radioButton);
-                    answerDiv.appendChild(document.createTextNode(answerText));
-                } else {
-                    answerDiv.style.display = 'none';
+        // Save selected answers to localStorage
+        function saveAnswers() {
+            const allQuizzes = document.querySelectorAll('.form-group');
+            allQuizzes.forEach((quiz, quizIndex) => {
+                const selectedOption = quiz.querySelector('input[type="radio"]:checked');
+                if (selectedOption) {
+                    // Save answers specific to the current quiz page
+                    localStorage.setItem(`quiz-${quizPageId}-${quizIndex}`, selectedOption.value);
                 }
             });
-
-            correctAnswers.push(correctAnswer);
-        });
-
-        console.log('Correct Answers:', correctAnswers);
-
-        const submitButton = document.createElement('button');
-        submitButton.textContent = 'Submit';
-        submitButton.style.display = 'block';
-        submitButton.style.margin = '20px auto';
-        submitButton.style.padding = '10px 20px';
-        submitButton.style.fontSize = '16px';
-        document.body.appendChild(submitButton);
-
-        function updateScoreDisplay() {
-            scoreElement.textContent = `Your Score: ${correctCount}/${totalQuestions}`;
         }
 
-        // Create a history container for storing submission history
-        const historyContainer = document.createElement('div');
-        historyContainer.id = 'historyContainer';
-        document.body.appendChild(historyContainer);
-
-        // Create a button to clear the history
-        const clearHistoryButton = document.createElement('button');
-        clearHistoryButton.textContent = 'Clear History';
-        clearHistoryButton.style.display = 'block';
-        clearHistoryButton.style.margin = '20px auto';
-        clearHistoryButton.style.padding = '10px 20px';
-        clearHistoryButton.style.fontSize = '16px';
-        document.body.appendChild(clearHistoryButton);
-
-        // Function to clear history and reload the page
-        clearHistoryButton.addEventListener('click', function () {
-            const historyKey = `submitHistory-${quizPageId}`;
-            localStorage.removeItem(historyKey); // Remove only the history for the current quiz page
-            historyContainer.innerHTML = '';  // Clear the history container for the current quiz page
-            alert('History cleared for this quiz page!');
-        });
-
-        // Load and display history
-        function loadHistory() {
-            console.log("Loading history...");
-
-            // Load the history specific to the current quiz page
-            const historyKey = `submitHistory-${quizPageId}`;
-            const history = JSON.parse(localStorage.getItem(historyKey)) || [];
-            console.log("History found for this page:", history); // Debug log to check the saved history data
-
-            historyContainer.innerHTML = ''; // Clear the container first
-
-            if (history.length === 0) {
-                historyContainer.textContent = "No history available."; // Display message if no history
-            } else {
-                history.forEach((entry, index) => {
-                    const historyEntryDiv = document.createElement('div');
-                    historyEntryDiv.style.padding = '10px 0'; // Add padding for better spacing
-                    historyEntryDiv.innerHTML = `Submit ${index + 1}: ${entry.wrongCount} questions were wrong.`;
-
-                    const redoButton = document.createElement('button');
-                    redoButton.textContent = `Re-do wrong ones for Submit ${index + 1}`;
-
-                    redoButton.addEventListener('click', function () {
-                        redoWrongOnesForSubmit(entry.wrongQuestions);
-                    });
-                    historyEntryDiv.appendChild(redoButton);
-                    historyContainer.appendChild(historyEntryDiv);
-                });
-            }
+        // Load saved answers from localStorage
+        function loadAnswers() {
+            const allQuizzes = document.querySelectorAll('.form-group');
+            allQuizzes.forEach((quiz, quizIndex) => {
+                // Load answers specific to the current quiz page
+                const savedAnswer = localStorage.getItem(`quiz-${quizPageId}-${quizIndex}`);
+                if (savedAnswer) {
+                    const optionToSelect = quiz.querySelector(`input[type="radio"][value="${savedAnswer}"]`);
+                    if (optionToSelect) {
+                        optionToSelect.checked = true;
+                    }
+                }
+            });
         }
 
-        // Save the current result to history
-        function saveToHistory(wrongQuestions) {
-            console.log("Saving to history...");
-
-            // Fetch existing history for this quiz page
-            const historyKey = `submitHistory-${quizPageId}`;
-            const history = JSON.parse(localStorage.getItem(historyKey)) || [];
-            console.log("Current history in storage for this page:", history); // Debug log to see existing history
-
-            // Add the new submission to the history
-            history.push({ wrongCount: wrongQuestions.length, wrongQuestions });
-            console.log("Updated history with new entry:", history); // Debug log to verify new history
-
-            // Save back to localStorage with the page-specific key
-            localStorage.setItem(historyKey, JSON.stringify(history));
-            console.log("Saved history to localStorage for this page."); // Debug log
-
-            loadHistory(); // Refresh the history display
+        // Clear quiz-related data but keep history
+        function clearQuizAnswers() {
+            // Clear only the answers related to the current quiz page
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith(`quiz-${quizPageId}-`)) {
+                    localStorage.removeItem(key);
+                }
+            });
         }
+        // Create the history container and buttons dynamically
+        document.addEventListener('DOMContentLoaded', function () {
+            // Your JavaScript code starts here
+
+            // Select all quizzes (form-group divs)
+            const quizDivs = document.querySelectorAll('.form-group');
+            let correctAnswers = [];
+            let wrongQuestions = [];
+            let wrongQuestionsRetry = [];  // Track the previously correct questions
+            let isRedoMode = false;
+
+            // Find and update the score element
+            let scoreElement = document.querySelector('h5');
+            let totalQuestions = quizDivs.length;
+            let correctCount = 0;
 
 
-        // Function to redo wrong ones for a specific submit
-        function redoWrongOnesForSubmit(wrongQuestionsFromHistory) {
-            console.log("Redoing wrong ones for specific submit:", wrongQuestionsFromHistory); // Debug log
+
+            // Loop through each quiz div to identify correct answers
             quizDivs.forEach((quiz, index) => {
-                if (!wrongQuestionsFromHistory.includes(index)) {
-                    quiz.style.display = 'none'; // Hide the correct ones
+                const answerDivs = quiz.querySelectorAll('div');
+                let correctAnswer = '';
+
+                // Loop through each answer div inside the quiz
+                answerDivs.forEach((answerDiv, i) => {
+                    const isCorrectAnswer = answerDiv.style.backgroundColor === 'lightgreen' &&
+                        answerDiv.style.width === '50%' &&
+                        !answerDiv.textContent.includes("Your answer");
+
+                    if (isCorrectAnswer) {
+                        correctAnswer = answerDiv.textContent.trim();
+                    }
+
+                    answerDiv.style.backgroundColor = 'transparent';
+
+                    const answerText = answerDiv.textContent.trim();
+
+                    if (answerText !== '' && !answerDiv.querySelector('h1') && !answerDiv.textContent.includes("Your answer")) {
+                        const radioButton = document.createElement('input');
+                        radioButton.type = 'radio';
+                        radioButton.name = `quiz-${index}`;
+                        radioButton.value = answerText;
+
+                        answerDiv.innerHTML = '';
+                        answerDiv.appendChild(radioButton);
+                        answerDiv.appendChild(document.createTextNode(answerText));
+                    } else {
+                        answerDiv.style.display = 'none';
+                    }
+                });
+
+                correctAnswers.push(correctAnswer);
+            });
+
+            console.log('Correct Answers:', correctAnswers);
+
+            const submitButton = document.createElement('button');
+            submitButton.textContent = 'Submit';
+            submitButton.style.display = 'block';
+            submitButton.style.margin = '20px auto';
+            submitButton.style.padding = '10px 20px';
+            submitButton.style.fontSize = '16px';
+            document.body.appendChild(submitButton);
+
+            function updateScoreDisplay() {
+                scoreElement.textContent = `Your Score: ${correctCount}/${totalQuestions}`;
+            }
+
+            // Create a history container for storing submission history
+            const historyContainer = document.createElement('div');
+            historyContainer.id = 'historyContainer';
+            document.body.appendChild(historyContainer);
+
+            // Create a button to clear the history
+            const clearHistoryButton = document.createElement('button');
+            clearHistoryButton.textContent = 'Clear History';
+            clearHistoryButton.style.display = 'block';
+            clearHistoryButton.style.margin = '20px auto';
+            clearHistoryButton.style.padding = '10px 20px';
+            clearHistoryButton.style.fontSize = '16px';
+            document.body.appendChild(clearHistoryButton);
+
+            // Function to clear history and reload the page
+            clearHistoryButton.addEventListener('click', function () {
+                const historyKey = `submitHistory-${quizPageId}`;
+                localStorage.removeItem(historyKey); // Remove only the history for the current quiz page
+                historyContainer.innerHTML = '';  // Clear the history container for the current quiz page
+                alert('History cleared for this quiz page!');
+            });
+
+            // Load and display history
+            function loadHistory() {
+                console.log("Loading history...");
+
+                // Load the history specific to the current quiz page
+                const historyKey = `submitHistory-${quizPageId}`;
+                const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+                console.log("History found for this page:", history); // Debug log to check the saved history data
+
+                historyContainer.innerHTML = ''; // Clear the container first
+
+                if (history.length === 0) {
+                    historyContainer.textContent = "No history available."; // Display message if no history
                 } else {
-                    quiz.style.display = 'block'; // Show the wrong ones
-                    const answerDivs = quiz.querySelectorAll('div');
-                    answerDivs.forEach((answerDiv) => {
-                        answerDiv.style.backgroundColor = 'transparent'; // Clear any background color
-                        const radioButton = answerDiv.querySelector('input[type="radio"]');
-                        if (radioButton) {
-                            radioButton.checked = false; // Uncheck the radio buttons
+                    history.forEach((entry, index) => {
+                        const historyEntryDiv = document.createElement('div');
+                        historyEntryDiv.style.padding = '10px 0'; // Add padding for better spacing
+                        historyEntryDiv.innerHTML = `Submit ${index + 1}: ${entry.wrongCount} questions were wrong.`;
+
+                        const redoButton = document.createElement('button');
+                        redoButton.textContent = `Re-do wrong ones for Submit ${index + 1}`;
+                        redoButton.classList.add('redoButton'); // Add a class for easier query selection later
+                        redoButton.setAttribute('data-submission-index', index + 1); // Attach submission index to the button
+
+
+                        redoButton.addEventListener('click', function () {
+                            redoWrongOnesForSubmit(entry.wrongQuestions);
+                        });
+                        historyEntryDiv.appendChild(redoButton);
+                        historyContainer.appendChild(historyEntryDiv);
+                    });
+                }
+            }
+
+            // Save the current result to history
+            function saveToHistory(wrongQuestions) {
+                console.log("Saving to history...");
+
+                // Fetch existing history for this quiz page
+                const historyKey = `submitHistory-${quizPageId}`;
+                const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+                console.log("Current history in storage for this page:", history); // Debug log to see existing history
+
+                // Add the new submission to the history
+                history.push({ wrongCount: wrongQuestions.length, wrongQuestions });
+                console.log("Updated history with new entry:", history); // Debug log to verify new history
+
+                // Save back to localStorage with the page-specific key
+                localStorage.setItem(historyKey, JSON.stringify(history));
+                console.log("Saved history to localStorage for this page."); // Debug log
+
+                loadHistory(); // Refresh the history display
+            }
+
+
+            // Function to redo wrong ones for a specific submit
+            function redoWrongOnesForSubmit(wrongQuestionsFromHistory) {
+                console.log("Redoing wrong ones for specific submit:", wrongQuestionsFromHistory); // Debug log
+                quizDivs.forEach((quiz, index) => {
+                    if (!wrongQuestionsFromHistory.includes(index)) {
+                        quiz.style.display = 'none'; // Hide the correct ones
+                    } else {
+                        quiz.style.display = 'block'; // Show the wrong ones
+                        const answerDivs = quiz.querySelectorAll('div');
+                        answerDivs.forEach((answerDiv) => {
+                            answerDiv.style.backgroundColor = 'transparent'; // Clear any background color
+                            const radioButton = answerDiv.querySelector('input[type="radio"]');
+                            if (radioButton) {
+                                radioButton.checked = false; // Uncheck the radio buttons
+                            }
+                        });
+                    }
+                });
+
+                isRedoMode = true;
+            }
+            loadHistory(); // Call loadHistory after saving to history
+            handleRedoRequest(); // Check if a specific submission redo needs to be triggered
+
+            submitButton.addEventListener('click', function () {
+                // Clear only quiz-related entries from localStorage, but keep the submission history
+                clearQuizAnswers();
+
+
+                if (isRedoMode) {
+                    correctCount = 0;
+                    wrongQuestionsRetry = [];
+
+                    // Load wrong questions from localStorage if in redo mode
+                    const storedWrongQuestions = JSON.parse(localStorage.getItem('wrongQuestions')) || [];
+
+
+                    quizDivs.forEach((quiz, index) => {
+                        const selectedAnswer = quiz.querySelector(`input[name="quiz-${index}"]:checked`);
+                        const answerDivs = quiz.querySelectorAll('div');
+
+                        answerDivs.forEach((answerDiv) => {
+                            answerDiv.style.backgroundColor = 'transparent'; // Clear any background colors
+                        });
+
+                        // If this quiz was part of the wrong questions, recheck it
+                        if (storedWrongQuestions.includes(index)) {
+                            const correctAnswer = correctAnswers[index];
+
+                            if (selectedAnswer) {
+                                const selectedText = selectedAnswer.value;
+
+                                if (selectedText === correctAnswer) {
+                                    answerDivs.forEach((answerDiv) => {
+                                        if (answerDiv.textContent.trim() === correctAnswer) {
+                                            answerDiv.style.backgroundColor = 'lightgreen';
+                                        }
+                                    });
+                                    correctCount++;  // Increment correct count for the reattempted question
+                                } else {
+                                    answerDivs.forEach((answerDiv) => {
+                                        if (answerDiv.textContent.trim() === selectedText) {
+                                            answerDiv.style.backgroundColor = 'rgb(255, 160, 122)';
+                                        }
+                                    });
+                                    answerDivs.forEach((answerDiv) => {
+                                        if (answerDiv.textContent.trim() === correctAnswer) {
+                                            answerDiv.style.backgroundColor = 'lightgreen';
+                                        }
+                                    });
+                                    wrongQuestionsRetry.push(index);  // Track the newly wrong questions
+                                }
+                            }
+                            else {
+                                answerDivs.forEach((answerDiv) => {
+                                    if (answerDiv.textContent.trim() === correctAnswer) {
+                                        answerDiv.style.backgroundColor = 'lightgreen';
+                                    }
+                                });
+                                wrongQuestionsRetry.push(index);  // Track newly wrong questions
+                            }
+                        } else {
+                            // If the quiz was previously correct (hidden), automatically count it as correct
+                            correctCount++; // Increment for hidden correct questions
                         }
                     });
-                }
-            });
 
-            isRedoMode = true;
-        }
-        loadHistory(); // Call loadHistory after saving to history
+                    // Save the new attempt results to history
+                    saveToHistory(wrongQuestionsRetry);  // Save only the newly wrong questions
+                    loadHistory(); // Load updated history
+                    updateScoreDisplay(); // Update the score display
 
-        submitButton.addEventListener('click', function () {
-            // Clear only quiz-related entries from localStorage, but keep the submission history
-            clearQuizAnswers();
+                    // Save wrong questions to localStorage for redo mode
+                    localStorage.setItem('wrongQuestions', JSON.stringify(wrongQuestionsRetry));
 
 
-            if (isRedoMode) {
-                correctCount = 0;
-                wrongQuestionsRetry = [];
+                    // Reset redo mode
+                    isRedoMode = false;
+                } else {
+                    correctCount = 0;
+                    wrongQuestions = [];
 
-                // Load wrong questions from localStorage if in redo mode
-                const storedWrongQuestions = JSON.parse(localStorage.getItem('wrongQuestions')) || [];
+                    quizDivs.forEach((quiz, index) => {
+                        const selectedAnswer = quiz.querySelector(`input[name="quiz-${index}"]:checked`);
+                        const answerDivs = quiz.querySelectorAll('div');
 
+                        answerDivs.forEach((answerDiv) => {
+                            answerDiv.style.backgroundColor = 'transparent';
+                        });
 
-                quizDivs.forEach((quiz, index) => {
-                    const selectedAnswer = quiz.querySelector(`input[name="quiz-${index}"]:checked`);
-                    const answerDivs = quiz.querySelectorAll('div');
-
-                    answerDivs.forEach((answerDiv) => {
-                        answerDiv.style.backgroundColor = 'transparent'; // Clear any background colors
-                    });
-
-                    // If this quiz was part of the wrong questions, recheck it
-                    if (storedWrongQuestions.includes(index)) {
                         const correctAnswer = correctAnswers[index];
-
                         if (selectedAnswer) {
                             const selectedText = selectedAnswer.value;
 
@@ -3580,124 +3660,62 @@
                                         answerDiv.style.backgroundColor = 'lightgreen';
                                     }
                                 });
-                                correctCount++;  // Increment correct count for the reattempted question
+
+                                correctCount++;
                             } else {
                                 answerDivs.forEach((answerDiv) => {
                                     if (answerDiv.textContent.trim() === selectedText) {
                                         answerDiv.style.backgroundColor = 'rgb(255, 160, 122)';
                                     }
                                 });
+
                                 answerDivs.forEach((answerDiv) => {
                                     if (answerDiv.textContent.trim() === correctAnswer) {
                                         answerDiv.style.backgroundColor = 'lightgreen';
                                     }
                                 });
-                                wrongQuestionsRetry.push(index);  // Track the newly wrong questions
+
+                                wrongQuestions.push(index);
+                            }
+                        } else {
+                            if (correctAnswer != "") {
+                                answerDivs.forEach((answerDiv) => {
+                                    if (answerDiv.textContent.trim() === correctAnswer) {
+                                        answerDiv.style.backgroundColor = 'lightgreen';
+                                    }
+                                });
+
+                                wrongQuestions.push(index);
                             }
                         }
-                        else {
-                            answerDivs.forEach((answerDiv) => {
-                                if (answerDiv.textContent.trim() === correctAnswer) {
-                                    answerDiv.style.backgroundColor = 'lightgreen';
-                                }
-                            });
-                            wrongQuestionsRetry.push(index);  // Track newly wrong questions
-                        }
-                    } else {
-                        // If the quiz was previously correct (hidden), automatically count it as correct
-                        correctCount++; // Increment for hidden correct questions
-                    }
-                });
-
-                // Save the new attempt results to history
-                saveToHistory(wrongQuestionsRetry);  // Save only the newly wrong questions
-                loadHistory(); // Load updated history
-                updateScoreDisplay(); // Update the score display
-
-                // Save wrong questions to localStorage for redo mode
-                localStorage.setItem('wrongQuestions', JSON.stringify(wrongQuestionsRetry));
-
-
-                // Reset redo mode
-                isRedoMode = false;
-            } else {
-                correctCount = 0;
-                wrongQuestions = [];
-
-                quizDivs.forEach((quiz, index) => {
-                    const selectedAnswer = quiz.querySelector(`input[name="quiz-${index}"]:checked`);
-                    const answerDivs = quiz.querySelectorAll('div');
-
-                    answerDivs.forEach((answerDiv) => {
-                        answerDiv.style.backgroundColor = 'transparent';
                     });
 
-                    const correctAnswer = correctAnswers[index];
-                    if (selectedAnswer) {
-                        const selectedText = selectedAnswer.value;
+                    // Save wrong questions to localStorage for redo mode
+                    localStorage.setItem('wrongQuestions', JSON.stringify(wrongQuestions));
 
-                        if (selectedText === correctAnswer) {
-                            answerDivs.forEach((answerDiv) => {
-                                if (answerDiv.textContent.trim() === correctAnswer) {
-                                    answerDiv.style.backgroundColor = 'lightgreen';
-                                }
-                            });
+                    // Save the result to history after processing
+                    saveToHistory(wrongQuestions); // Call saveToHistory here
 
-                            correctCount++;
-                        } else {
-                            answerDivs.forEach((answerDiv) => {
-                                if (answerDiv.textContent.trim() === selectedText) {
-                                    answerDiv.style.backgroundColor = 'rgb(255, 160, 122)';
-                                }
-                            });
+                    // Load history to display updated results
+                    loadHistory(); // Call loadHistory after saving to history
 
-                            answerDivs.forEach((answerDiv) => {
-                                if (answerDiv.textContent.trim() === correctAnswer) {
-                                    answerDiv.style.backgroundColor = 'lightgreen';
-                                }
-                            });
+                    updateScoreDisplay();
 
-                            wrongQuestions.push(index);
-                        }
-                    } else {
-                        if (correctAnswer != "") {
-                            answerDivs.forEach((answerDiv) => {
-                                if (answerDiv.textContent.trim() === correctAnswer) {
-                                    answerDiv.style.backgroundColor = 'lightgreen';
-                                }
-                            });
+                    isRedoMode = false;
+                }
+            });
 
-                            wrongQuestions.push(index);
-                        }
-                    }
-                });
 
-                // Save wrong questions to localStorage for redo mode
-                localStorage.setItem('wrongQuestions', JSON.stringify(wrongQuestions));
 
-                // Save the result to history after processing
-                saveToHistory(wrongQuestions); // Call saveToHistory here
-
-                // Load history to display updated results
-                loadHistory(); // Call loadHistory after saving to history
-
-                updateScoreDisplay();
-
-                isRedoMode = false;
-            }
+            loadAnswers();
+            // Save answers every time a radio button is clicked
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', saveAnswers);
+            });
         });
 
 
-
-        loadAnswers();
-        // Save answers every time a radio button is clicked
-        document.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.addEventListener('change', saveAnswers);
-        });
-    });
-
-
-</script>
+    </script>
 
 
 

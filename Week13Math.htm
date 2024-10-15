@@ -3097,6 +3097,20 @@
 <script>
     const quizPageId = window.location.pathname; // Use the path of the URL as the identifier
 
+    // Function to check URL and trigger the correct redo button
+    function handleRedoRequest() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const submissionIndex = urlParams.get('submissionIndex');
+
+        if (submissionIndex) {
+            // Find the redo button with the matching submission index and trigger a click
+            const redoButton = document.querySelector(`.redoButton[data-submission-index="${submissionIndex}"]`);
+            if (redoButton) {
+                redoButton.click(); // Trigger the click event
+            }
+        }
+    }
+
     // Save selected answers to localStorage
     function saveAnswers() {
         const allQuizzes = document.querySelectorAll('.form-group');
@@ -3244,6 +3258,9 @@
 
                     const redoButton = document.createElement('button');
                     redoButton.textContent = `Re-do wrong ones for Submit ${index + 1}`;
+                    redoButton.classList.add('redoButton'); // Add a class for easier query selection later
+                    redoButton.setAttribute('data-submission-index', index + 1); // Attach submission index to the button
+
 
                     redoButton.addEventListener('click', function () {
                         redoWrongOnesForSubmit(entry.wrongQuestions);
@@ -3297,6 +3314,7 @@
             isRedoMode = true;
         }
         loadHistory(); // Call loadHistory after saving to history
+        handleRedoRequest(); // Check if a specific submission redo needs to be triggered
 
         submitButton.addEventListener('click', function () {
             // Clear only quiz-related entries from localStorage, but keep the submission history
