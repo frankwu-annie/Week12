@@ -2688,7 +2688,8 @@ cfg: { // Application Insights Configuration
                 wrongQuestionsRetry = [];
 
                 // Load wrong questions from localStorage if in redo mode
-                const storedWrongQuestions = JSON.parse(localStorage.getItem('wrongQuestions')) || [];
+                //const storedWrongQuestions = JSON.parse(localStorage.getItem('wrongQuestions')) || [];
+                const storedWrongQuestions = JSON.parse(localStorage.getItem("submitHistory-/Week12/" + window.location.pathname.split('/').pop().split('?')[0]))?.[0]?.wrongQuestions || [];
 
 
                 quizDivs.forEach((quiz, index) => {
