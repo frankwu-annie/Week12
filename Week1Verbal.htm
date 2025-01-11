@@ -3874,7 +3874,7 @@
 
 
                         redoButton.addEventListener('click', function () {
-                            const submissionIndex = button.getAttribute('data-submission-index'); // Get the data-submission-index
+                            const submissionIndex = redoButton.getAttribute('data-submission-index'); // Get the data-submission-index
                             const currentUrl = new URL(window.location.href); // Get the current URL
 
                             // Update the `submissionIndex` parameter
