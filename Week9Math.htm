@@ -3307,6 +3307,14 @@ cfg: { // Application Insights Configuration
 
 
                     redoButton.addEventListener('click', function () {
+                        const submissionIndex = redoButton.getAttribute('data-submission-index'); // Get the data-submission-index
+                        const currentUrl = new URL(window.location.href); // Get the current URL
+
+                        // Update the `submissionIndex` parameter
+                        currentUrl.searchParams.set('submissionIndex', submissionIndex);
+
+                        // Update the browser's URL without reloading the page
+                        window.history.replaceState(null, '', currentUrl);
                         redoWrongOnesForSubmit(entry.wrongQuestions);
                     });
                     historyEntryDiv.appendChild(redoButton);
@@ -3371,7 +3379,9 @@ cfg: { // Application Insights Configuration
 
                 // Load wrong questions from localStorage if in redo mode
                 //const storedWrongQuestions = JSON.parse(localStorage.getItem('wrongQuestions')) || [];
-                const storedWrongQuestions = JSON.parse(localStorage.getItem("submitHistory-/Week12/" + window.location.pathname.split('/').pop().split('?')[0]))?.[0]?.wrongQuestions || [];
+                const urlParams = new URLSearchParams(window.location.search);
+                const submissionIndex = urlParams.get('submissionIndex') - 1;
+                const storedWrongQuestions = JSON.parse(localStorage.getItem("submitHistory-/Week12/" + window.location.pathname.split('/').pop().split('?')[0]))?.[submissionIndex]?.wrongQuestions || [];
 
 
                 quizDivs.forEach((quiz, index) => {
