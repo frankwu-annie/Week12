@@ -3549,7 +3549,7 @@ In the bottom row, pick the picture that is most similar to the top 3.</h4>
     </script>
 
 
-<script>
+<!-- <script>
     const quizPageId = window.location.pathname; // Use the path of the URL as the identifier
 
     // Function to check URL and trigger the correct redo button
@@ -3923,6 +3923,221 @@ In the bottom row, pick the picture that is most similar to the top 3.</h4>
     });
 
 
+</script> -->
+
+<script>
+    const quizPageId = window.location.pathname; // Use the path of the URL as the identifier
+
+    // Function to check URL and trigger the correct redo button
+    function handleRedoRequest() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const submissionIndex = urlParams.get('submissionIndex');
+        if (submissionIndex !== null) {
+            const redoButton = document.querySelector(`.redoButton[data-submission-index="${submissionIndex}"]`);
+            if (redoButton) redoButton.click();
+        }
+    }
+
+    // Save selected answers to localStorage
+    function saveAnswers() {
+        const allQuizzes = document.querySelectorAll('.form-group');
+        allQuizzes.forEach((quiz, quizIndex) => {
+            const selectedOption = quiz.querySelector('input[type="radio"]:checked');
+            if (selectedOption) {
+                localStorage.setItem(`quiz-${quizPageId}-${quizIndex}`, selectedOption.value);
+            }
+        });
+    }
+
+    // Load saved answers from localStorage
+    function loadAnswers() {
+        const allQuizzes = document.querySelectorAll('.form-group');
+        allQuizzes.forEach((quiz, quizIndex) => {
+            const savedAnswer = localStorage.getItem(`quiz-${quizPageId}-${quizIndex}`);
+            if (savedAnswer) {
+                const optionToSelect = quiz.querySelector(`input[type="radio"][value="${savedAnswer}"]`);
+                if (optionToSelect) {
+                    optionToSelect.checked = true;
+                }
+            }
+        });
+    }
+
+    // Clear quiz-related data but keep history
+    function clearQuizAnswers() {
+        Object.keys(localStorage).forEach((key) => {
+            if (key.startsWith(`quiz-${quizPageId}-`)) {
+                localStorage.removeItem(key);
+            }
+        });
+    }
+
+    function redoWrongOnesForSubmit(wrongQuestionsFromHistory) {
+        const quizDivs = document.querySelectorAll('.form-group');
+        quizDivs.forEach((quiz, index) => {
+            if (!wrongQuestionsFromHistory.includes(index)) {
+                quiz.style.display = 'none'; // Hide questions not in wrongQuestionsFromHistory
+            } else {
+                quiz.style.display = 'block';
+                const answerDivs = quiz.querySelectorAll('div');
+                answerDivs.forEach((answerDiv) => {
+                    answerDiv.style.backgroundColor = 'transparent'; // Clear any previous background color
+                    const radioButton = answerDiv.querySelector('input[type="radio"]');
+                    if (radioButton) {
+                        radioButton.checked = false;
+                    }
+                });
+            }
+        });
+        isRedoMode = true;
+    }
+
+    function saveToHistory(wrongQuestions) {
+        const historyKey = `submitHistory-${quizPageId}`;
+        const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+        history.push({ wrongCount: wrongQuestions.length, wrongQuestions });
+        localStorage.setItem(historyKey, JSON.stringify(history));
+    }
+
+    function loadHistory() {
+        const historyKey = `submitHistory-${quizPageId}`;
+        const history = JSON.parse(localStorage.getItem(historyKey)) || [];
+        const historyContainer = document.getElementById('historyContainer');
+
+        historyContainer.innerHTML = '';
+        if (history.length === 0) {
+            historyContainer.textContent = 'No history available.';
+            return;
+        }
+
+        history.forEach((entry, index) => {
+            const historyEntryDiv = document.createElement('div');
+            historyEntryDiv.style.padding = '10px 0';
+            historyEntryDiv.innerHTML = `Submit ${index + 1}: ${entry.wrongCount} questions were wrong.`;
+
+            const redoButton = document.createElement('button');
+            redoButton.textContent = `Re-do wrong ones for Submit ${index + 1}`;
+            redoButton.classList.add('redoButton');
+            redoButton.setAttribute('data-submission-index', index);
+
+            redoButton.addEventListener('click', () => {
+                redoWrongOnesForSubmit(entry.wrongQuestions);
+            });
+
+            historyEntryDiv.appendChild(redoButton);
+            historyContainer.appendChild(historyEntryDiv);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const quizDivs = document.querySelectorAll('.form-group');
+        const correctAnswers = [];
+        const wrongQuestions = [];
+        let correctCount = 0;
+        const scoreElement = document.querySelector('h5');
+        const historyContainer = document.createElement('div');
+        historyContainer.id = 'historyContainer';
+        document.body.appendChild(historyContainer);
+
+        const submitButton = document.createElement('button');
+        submitButton.textContent = 'Submit';
+        submitButton.style.display = 'block';
+        submitButton.style.margin = '20px auto';
+        submitButton.style.padding = '10px 20px';
+        submitButton.style.fontSize = '16px';
+        document.body.appendChild(submitButton);
+
+        quizDivs.forEach((quiz, index) => {
+            const answerDivs = quiz.querySelectorAll('div');
+            let correctAnswer = '';
+
+            answerDivs.forEach((answerDiv) => {
+                if (answerDiv.style.backgroundColor === 'lightgreen') {
+                    correctAnswer = answerDiv.textContent.trim();
+                }
+
+                answerDiv.style.backgroundColor = 'transparent';
+                const answerText = answerDiv.textContent.trim();
+
+                if (answerText) {
+                    const radioButton = document.createElement('input');
+                    radioButton.type = 'radio';
+                    radioButton.name = `quiz-${index}`;
+                    radioButton.value = answerText;
+
+                    answerDiv.innerHTML = '';
+                    answerDiv.appendChild(radioButton);
+                    answerDiv.appendChild(document.createTextNode(answerText));
+                } else {
+                    answerDiv.style.display = 'none';
+                }
+            });
+
+            correctAnswers.push(correctAnswer);
+        });
+
+        function updateScoreDisplay() {
+            scoreElement.textContent = `Your Score: ${correctCount}/${quizDivs.length}`;
+        }
+
+        submitButton.addEventListener('click', function () {
+            clearQuizAnswers();
+            correctCount = 0;
+            wrongQuestions.length = 0;
+
+            quizDivs.forEach((quiz, index) => {
+                const selectedAnswer = quiz.querySelector(`input[name="quiz-${index}"]:checked`);
+                const answerDivs = quiz.querySelectorAll('div');
+                const correctAnswer = correctAnswers[index];
+
+                answerDivs.forEach((answerDiv) => {
+                    answerDiv.style.backgroundColor = 'transparent';
+                });
+
+                if (selectedAnswer) {
+                    const selectedText = selectedAnswer.value;
+
+                    if (selectedText === correctAnswer) {
+                        answerDivs.forEach((answerDiv) => {
+                            if (answerDiv.textContent.trim() === correctAnswer) {
+                                answerDiv.style.backgroundColor = 'lightgreen';
+                            }
+                        });
+                        correctCount++;
+                    } else {
+                        answerDivs.forEach((answerDiv) => {
+                            if (answerDiv.textContent.trim() === selectedText) {
+                                answerDiv.style.backgroundColor = 'rgb(255, 160, 122)';
+                            }
+                        });
+                        answerDivs.forEach((answerDiv) => {
+                            if (answerDiv.textContent.trim() === correctAnswer) {
+                                answerDiv.style.backgroundColor = 'lightgreen';
+                            }
+                        });
+                        wrongQuestions.push(index);
+                    }
+                } else {
+                    if (correctAnswer) {
+                        answerDivs.forEach((answerDiv) => {
+                            if (answerDiv.textContent.trim() === correctAnswer) {
+                                answerDiv.style.backgroundColor = 'lightgreen';
+                            }
+                        });
+                        wrongQuestions.push(index);
+                    }
+                }
+            });
+
+            saveToHistory(wrongQuestions);
+            loadHistory();
+            updateScoreDisplay();
+        });
+
+        loadAnswers();
+        loadHistory();
+        handleRedoRequest();
+    });
 </script>
 
 </body></html>
