@@ -3785,8 +3785,6 @@ In the bottom row, pick the picture that is most similar to the top 3.</h4>
                 const storedWrongQuestions = JSON.parse(localStorage.getItem("submitHistory-/Week12/" + window.location.pathname.split('/').pop().split('?')[0]))?.[submissionIndex]?.wrongQuestions || [];
 
                 
-
-
                 quizDivs.forEach((quiz, index) => {
                     const selectedAnswer = quiz.querySelector(`input[name="quiz-${index}"]:checked`);
                     const answerDivs = quiz.querySelectorAll('div');
