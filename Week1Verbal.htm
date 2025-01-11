@@ -3782,6 +3782,8 @@ In the bottom row, pick the picture that is most similar to the top 3.</h4>
 
                 // Load wrong questions from localStorage if in redo mode
                 //const storedWrongQuestions = JSON.parse(localStorage.getItem('wrongQuestions')) || [];
+                const urlParams = new URLSearchParams(window.location.search);
+                const submissionIndex = urlParams.get('submissionIndex');
                 const storedWrongQuestions = JSON.parse(localStorage.getItem("submitHistory-/Week12/" + window.location.pathname.split('/').pop().split('?')[0]))?.[submissionIndex]?.wrongQuestions || [];
 
 
